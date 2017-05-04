@@ -7,8 +7,6 @@ class CharacterSheetView(tk.Toplevel):
         tk.Toplevel.__init__(self, master)
         self.geometry("+000+000")
         self.title("D&D 3.5 Character generator")
-        self.next_phase_btn = NextPhaseButton(self)
-        self.next_phase_btn.button.grid(row=0, column=2, sticky=E)
         self.race_class_level = RaceClassLevel(self)
         self.race_class_level.frame.grid(row=0, column=0, columnspan=2, sticky=W)
         self.ability_scores = AbilityScores(self)
@@ -48,7 +46,8 @@ class CharacterSheetView(tk.Toplevel):
         self.shield = Shield(self.protection)
         self.shield.frame.grid(row=2, column=0)
 
-
+        self.next_phase_btn = NextPhaseButton(self.race_class_level.frame)
+        self.next_phase_btn.button.grid(row=1, column=3)
 
 
 class NextPhaseButton:
