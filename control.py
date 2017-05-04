@@ -52,10 +52,10 @@ class CharacterSheetController(object):
         self.class_cmd = self.combine_funcs(self.update_class_level, self.update_ability_scores,
                                                   self.update_saving_throws, self.update_base_attack_bonus,
                                                   self.update_grapple, self.update_hp, self.update_armour_class,
-                                                  self.update_initiative, self.update_all_weapons, self.update_all_skills)
+                                                  self.update_initiative, self.update_all_weapons, self.update_skills, self.update_all_skills)
         self.class_level_cmd = self.combine_funcs(self.update_class_level, self.update_saving_throws,
                                                   self.update_base_attack_bonus, self.update_grapple,
-                                                  self.update_all_weapons)
+                                                  self.update_all_weapons, self.update_skills)
 
         #class field
         self.view.race_class_level.class_var.set(self.CLASS_OPTIONS[0])
@@ -129,6 +129,7 @@ class CharacterSheetController(object):
             weapon.weapon_proficiency_var.trace("w", lambda a, b, c, w=weapon: self.update_weapon_proficiency(w, [a, b, c]))
             self.update_weapon_proficiency(weapon)
 
+        self.update_skills()
         for skill in self.view.skills.skills_list:
             self.update_skill(skill)
 
@@ -217,10 +218,9 @@ class CharacterSheetController(object):
         self.view.armour_class.ac_armour_bonus_var.set(self.character.armour.get('ac_bonus', 0))
         self.view.armour_class.ac_shield_bonus_var.set(self.character.shield.get('ac_bonus', 0))
         self.view.armour_class.ac_dex_mod_var.set(self.character.get_armour_class_dex_mod())
-
-
-
         self.view.armour_class.ac_size_mod_var.set(self.character.get_size_modifier())
+        self.view.armour_class.ac_natural_armour_var.set(0)
+        self.view.armour_class.ac_deflection_mod_var.set(0)
         self.view.touch_armour_class.touch_ac_var.set(self.character.get_touch_armour_class())
         self.view.flatfooted_armour_class.flat_footed_ac_var.set(self.character.get_flatfoot_armour_class())
 
@@ -337,6 +337,10 @@ class CharacterSheetController(object):
             self.update_weapon(weapon)
 
 
+    def update_skills(self, *args):
+        self.view.skills.max_class_ranks_var.set(self.character.get_max_class_skill_ranks())
+
+
     def update_skill(self, skill, *args):
         ability = self.ABILITIES.get(skill.key_ability.get())
         skill.skill_mod_var.set(self.character.get_ability_modifier(ability))
@@ -440,6 +444,7 @@ class CharacterSheetController(object):
         self.update_constitution()
         self.update_intelligence()
         self.update_saving_throws()
+        self.update_skills()
         self.update_all_skills()
 
 
@@ -451,6 +456,7 @@ class CharacterSheetController(object):
         self.update_intelligence()
         self.update_wisdom()
         self.update_saving_throws()
+        self.update_skills()
         self.update_all_skills()
 
 

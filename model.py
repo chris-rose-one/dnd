@@ -293,3 +293,13 @@ class Character(object):
     def get_attack_bonus(self, weapon):
         return [i + self.get_ability_modifier('strength') + self.get_size_modifier() \
                 + (-4 if not self.check_weapon_proficiency(weapon) else 0) for i in self.base_attack_bonus]
+
+
+    def get_max_class_skill_ranks(self):
+        class_data, level = self.class_one_level
+        int_mod = self.get_ability_modifier("intelligence")
+        base_skill_ranks = class_data.get('base_skill_points')
+        class_skill_ranks = (base_skill_ranks + int_mod) * 4
+        for i in range(level - 1):
+            class_skill_ranks += (base_skill_ranks + int_mod)
+        return class_skill_ranks

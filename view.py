@@ -11,6 +11,26 @@ class CharacterSheetView(tk.Toplevel):
         self.race_class_level.frame.grid(row=0, column=0, columnspan=2, sticky=W)
         self.ability_scores = AbilityScores(self)
         self.ability_scores.frame.grid(row=1, column=0, sticky=W)
+
+        self.group_frame = tk.Frame(self, bd=2)
+        self.group_frame.grid(row=1, column=1, rowspan=6, sticky=NW)
+        self.hit_points = HitPoints(self.group_frame)
+        self.speed = Speed(self.group_frame)
+        self.armour_class = ArmourClass(self.group_frame)
+        self.touch_armour_class = TouchArmourClass(self.group_frame)
+        self.flatfooted_armour_class = FlatfootedArmourClass(self.group_frame)
+        self.initiative = Initiative(self.group_frame, self.ability_scores)
+        self.initiative.frame.grid(row=8, column=0, columnspan=4, sticky=N)
+        self.skills = Skills(self.group_frame, control)
+        self.skills.frame.grid(row=6, column=8, rowspan=64, columnspan=8, pady=(4,0), sticky=NW)
+
+        self.protection = tk.Frame(self, bd=2)
+        self.protection.grid(row=1, column=2, sticky=W)
+        self.armour = Armour(self.protection)
+        self.armour.frame.grid(row=1, column=0)
+        self.shield = Shield(self.protection)
+        self.shield.frame.grid(row=2, column=0)
+
         self.saving_throws = SavingThrows(self, self.ability_scores)
         self.saving_throws.frame.grid(row=2, column=0, columnspan=2, sticky=W)
         self.base_attack_bonus = BaseAttackBonus(self)
@@ -26,25 +46,6 @@ class CharacterSheetView(tk.Toplevel):
             weapon = Weapon(self.attack)
             weapon.frame.grid(row=i, column=0)
             self.weapons_list.append(weapon)
-
-        self.group_frame = tk.Frame(self, bd=2)
-        self.group_frame.grid(row=1, column=1, rowspan=3, sticky=NW)
-        self.hit_points = HitPoints(self.group_frame)
-        self.speed = Speed(self.group_frame)
-        self.armour_class = ArmourClass(self.group_frame)
-        self.touch_armour_class = TouchArmourClass(self.group_frame)
-        self.flatfooted_armour_class = FlatfootedArmourClass(self.group_frame)
-        self.initiative = Initiative(self.group_frame, self.ability_scores)
-        self.initiative.frame.grid(row=8, column=0, columnspan=4)
-        self.skills = Skills(self, control)
-        self.skills.frame.grid(row=2, column=2, rowspan=5, pady=(4,0), sticky=NW)
-
-        self.protection = tk.Frame(self, bd=2)
-        self.protection.grid(row=1, column=2, sticky=W)
-        self.armour = Armour(self.protection)
-        self.armour.frame.grid(row=1, column=0)
-        self.shield = Shield(self.protection)
-        self.shield.frame.grid(row=2, column=0)
 
         self.next_phase_btn = NextPhaseButton(self.race_class_level.frame)
         self.next_phase_btn.button.grid(row=1, column=3)
@@ -88,7 +89,7 @@ class RaceClassLevel:
 
 class AbilityScores:
     def __init__(self, parent):
-        self.frame = tk.Frame(parent, bd=2)
+        self.frame = tk.Frame(parent, bd=5)
 
         self.str_score_var = tk.StringVar()
         self.str_mod_var = tk.StringVar()
@@ -169,7 +170,7 @@ class AbilityScores:
 
 class SavingThrows:
     def __init__(self, parent, ability_scores):
-        self.frame = tk.Frame(parent, bd=2)
+        self.frame = tk.Frame(parent, bd=5)
 
         self.fort_save_total_var = tk.StringVar()
         self.fort_save_base_var = tk.StringVar()
@@ -275,20 +276,20 @@ class HitPoints:
 
         tk.Label(self.parent, text="TOTAL", font=("", 8)).grid(row=0, column=1, sticky=S, pady=0)
         tk.Label(self.parent, text="WOUNDS / CURRENT HP", font=("", 6)).grid(row=0, column=2, columnspan=3, sticky=S, pady=0)
-        tk.Label(self.parent, text="NON-LETHAL\nDAMAGE", font=("", 6)).grid(row=0, column=5, columnspan=3, sticky=S, pady=0)
+        tk.Label(self.parent, text="NON-LETHAL\nDAMAGE", font=("", 6)).grid(row=0, column=11, columnspan=3, sticky=S, pady=0)
 
         tk.Label(self.parent, textvariable=self.hp_total_var, font=("", 14)).grid(row=1, column=1, rowspan=2, pady=0)
         tk.Label(self.parent, textvariable=self.current_hp_var, font=("", 12)).grid(row=1, column=2, rowspan=2, columnspan=2, pady=0)
-        tk.Label(self.parent, textvariable=self.nonlethal_dmg_var, font=("", 12)).grid(row=1, column=5, rowspan=2, columnspan=3, pady=0)
+        tk.Label(self.parent, textvariable=self.nonlethal_dmg_var, font=("", 12)).grid(row=1, column=11, rowspan=2, columnspan=3, pady=0)
 
 
 class Speed:
     def __init__(self, parent):
         self.speed_var = tk.StringVar()
 
-        tk.Label(parent, text="SPEED", font=("", 10, 'bold')).grid(row=0, column=8, columnspan=3, sticky=S, pady=0)
+        tk.Label(parent, text="SPEED", font=("", 10, 'bold')).grid(row=0, column=15, sticky=S, pady=0)
 
-        tk.Label(parent, textvariable=self.speed_var, font=("", 14)).grid(row=1, column=8, rowspan=2, columnspan=3)
+        tk.Label(parent, textvariable=self.speed_var, font=("", 14)).grid(row=1, column=15, rowspan=2)
 
 
 class ArmourClass:
@@ -298,6 +299,8 @@ class ArmourClass:
         self.ac_shield_bonus_var = tk.StringVar()
         self.ac_dex_mod_var = tk.StringVar()
         self.ac_size_mod_var = tk.StringVar()
+        self.ac_natural_armour_var = tk.StringVar()
+        self.ac_deflection_mod_var = tk.StringVar()
 
         tk.Label(parent, text="AC", font=("", 12, 'bold'), bd=0).grid(row=3, column=0, sticky=S, pady=0)
         tk.Label(parent, text="ARMOUR CLASS", font=("", 6), bd=0).grid(row=4, column=0, sticky=N, pady=0)
@@ -312,12 +315,21 @@ class ArmourClass:
         tk.Label(parent, textvariable=self.ac_dex_mod_var, font=("", 12)).grid(row=3, column=8, rowspan=2)
         tk.Label(parent, text="+", font=("", 10), bd=0).grid(row=3, column=9, rowspan=2)
         tk.Label(parent, textvariable=self.ac_size_mod_var, font=("", 12)).grid(row=3, column=10, rowspan=2)
+        tk.Label(parent, text="+", font=("", 10), bd=0).grid(row=3, column=11, rowspan=2)
+        tk.Label(parent, textvariable=self.ac_natural_armour_var, font=("", 12)).grid(row=3, column=12, rowspan=2)
+        tk.Label(parent, text="+", font=("", 10), bd=0).grid(row=3, column=13, rowspan=2)
+        tk.Label(parent, textvariable=self.ac_deflection_mod_var, font=("", 12)).grid(row=3, column=14, rowspan=2)
 
         tk.Label(parent, text="TOTAL", font=("", 8)).grid(row=5, column=1, sticky=N, pady=0)
         tk.Label(parent, text="ARMOUR\nBONUS", font=("", 6)).grid(row=5, column=4, sticky=N, pady=0)
         tk.Label(parent, text="SHIELD\nBONUS", font=("", 6)).grid(row=5, column=6, sticky=N, pady=0)
         tk.Label(parent, text="DEX\nMODIFIER", font=("", 6)).grid(row=5, column=8, sticky=N, pady=0)
         tk.Label(parent, text="SIZE\nMODIFIER", font=("", 6)).grid(row=5, column=10, sticky=N, pady=0)
+        tk.Label(parent, text="NATURAL\nARMOUR", font=("", 6)).grid(row=5, column=12, sticky=N, pady=0)
+        tk.Label(parent, text="DEFLECTION\nMODIFIER", font=("", 6)).grid(row=5, column=14, sticky=N, pady=0)
+
+        tk.Label(parent, text="DAMAGE REDUCTION", font=("", 8, "bold")).grid(row=3, column=15, sticky=S, pady=0)
+
 
 class TouchArmourClass:
     def __init__(self, parent):
@@ -489,18 +501,27 @@ class Weapon:
 
 class Skills:
     def __init__(self, parent, control):
-        self.frame = tk.Frame(parent, bd=2)
+        self.frame = tk.Frame(parent)
 
         self.skills_list = []
-
-        tk.Label(self.frame, text="SKILL NAME", font=("", 10, "bold"), width=11, anchor=W).grid(row=0, column=0, sticky=SW)
-        tk.Label(self.frame, text="KEY\nABILITY", font=("", 6), width=5).grid(row=0, column=1, sticky=S)
-        tk.Label(self.frame, text="SKILL\nMODIFIER", font=("", 6), width=7).grid(row=0, column=2, sticky=S)
-        tk.Label(self.frame, text="ABILITY\nMODIFIER", font=("", 6), width=6).grid(row=0, column=3, sticky=S)
-        tk.Label(self.frame, text="RANKS", font=("", 6), width=5).grid(row=0, column=4, sticky=S)
+        self.max_class_ranks_var = tk.StringVar()
 
         frame = tk.Frame(self.frame)
-        frame.grid(row=1, columnspan=6, sticky=W, pady=(2,0))
+        frame.grid(row=0, column=0, columnspan=6, sticky=E)
+
+        tk.Label(frame, text="SKILLS", font=("", 14, "bold"), width=8, anchor=W).grid(row=0, column=0)
+        tk.Label(frame, text="MAX RANKS", font=("", 8), width=10, anchor=W).grid(row=0, column=1)
+
+        tk.Label(frame, textvariable=self.max_class_ranks_var, font=("", 12), width=4).grid(row=0, column=2)
+
+        tk.Label(self.frame, text="SKILL NAME", font=("", 10, "bold"), width=11, anchor=W).grid(row=1, column=0, sticky=SW)
+        tk.Label(self.frame, text="KEY\nABILITY", font=("", 6), width=5).grid(row=1, column=1, sticky=S)
+        tk.Label(self.frame, text="SKILL\nMODIFIER", font=("", 6), width=7).grid(row=1, column=2, sticky=S)
+        tk.Label(self.frame, text="ABILITY\nMODIFIER", font=("", 6), width=6).grid(row=1, column=3, sticky=S)
+        tk.Label(self.frame, text="RANKS", font=("", 6), width=5).grid(row=1, column=4, sticky=S)
+
+        frame = tk.Frame(self.frame)
+        frame.grid(row=2, columnspan=6, sticky=W, pady=(2,0))
 
         canvas = tk.Canvas(frame)
         f = tk.Frame(canvas)
@@ -517,7 +538,7 @@ class Skills:
 
         canvas.create_window(0, 0, window=f, anchor='nw')
         canvas.config(yscrollcommand=yscrollbar.set)
-        canvas.config(width=260, height=385)
+        canvas.config(width=260, height=455)
         canvas.pack(side=LEFT, expand=True, fill=BOTH)
 
         self.frame.update()
