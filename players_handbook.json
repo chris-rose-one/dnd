@@ -305,7 +305,9 @@
   },
   "skills_list": ["appraise", "balance", "bluff", "climb", "concentration", "craft", "decipher script", "diplomacy",
   "disable device", "disquise", "escape artist", "forgery", "gather information", "handle animal", "heal", "hide",
-  "intimidate", "jump"],
+  "intimidate", "jump", "knowledge", "listen", "move silently", "open lock", "perform", "profession", "ride", "search",
+  "sense motive", "sleight of hand", "spellcraft", "spot", "survival", "swim", "tumble", "use magic device",
+  "use rope"],
   "skills": {
     "appraise": {"key_ability": "int"},
     "balance": {"key_ability": "dex"},
@@ -324,7 +326,24 @@
     "heal": {"key_ability": "wis"},
     "hide": {"key_ability": "dex"},
     "intimidate": {"key_ability": "cha"},
-    "jump": {"key_ability": "str"}
+    "jump": {"key_ability": "str"},
+    "knowledge": {"key_ability": "int"},
+    "listen": {"key_ability": "wis"},
+    "move silently": {"key_ability": "dex"},
+    "open lock": {"key_ability": "dex"},
+    "perform": {"key_ability": "cha"},
+    "profession": {"key_ability": "wis"},
+    "ride": {"key_ability": "dex"},
+    "search": {"key_ability": "int"},
+    "sense motive": {"key_ability": "wis"},
+    "sleight of hand": {"key_ability": "dex"},
+    "spellcraft": {"key_ability": "int"},
+    "spot": {"key_ability": "wis"},
+    "survival": {"key_ability": "wis"},
+    "swim": {"key_ability": "str"},
+    "tumble": {"key_ability": "dex"},
+    "use magic device": {"key_ability": "cha"},
+    "use rope": {"key_ability": "dex"}
   },
   "weapon_default": {
     " -none- ": {},
@@ -431,14 +450,14 @@
     "full-plate": {"category": "heavy", "ac_bonus": 8, "max_dex_bonus": 1, "check_penalty": -6, "spell_failure": 35, "speed30": 20, "speed20": 15, "weight": 50}
   },
   "shield_default": {" -none- ": {"ac_bonus": 0, "check_penalty": 0, "spell_failure": 0}},
-  "shield_list": ["buckler", "light wooden", "light steal", "heavy wooden", "heavy steal", "tower"],
+  "shield_list": ["buckler", "light wooden", "light steel", "heavy wooden", "heavy steel", "tower"],
   "shield_categories": ["light", "heavy"],
   "shields": {
     "buckler": {"category": "light", "ac_bonus": 1, "check_penalty": -1, "spell_failure": 5, "weight": 5},
     "light wooden": {"category": "light", "ac_bonus": 1, "check_penalty": -1, "spell_failure": 5, "weight": 5},
-    "light steal": {"category": "light", "ac_bonus": 1, "check_penalty": -1, "spell_failure": 5, "weight": 6},
+    "light steel": {"category": "light", "ac_bonus": 1, "check_penalty": -1, "spell_failure": 5, "weight": 6},
     "heavy wooden": {"category": "heavy", "ac_bonus": 2, "check_penalty": -2, "spell_failure": 15, "weight": 10},
-    "heavy steal": {"category": "heavy", "ac_bonus": 2, "check_penalty": -2, "spell_failure": 15, "weight": 15},
+    "heavy steel": {"category": "heavy", "ac_bonus": 2, "check_penalty": -2, "spell_failure": 15, "weight": 15},
     "tower": {"category": "heavy", "ac_bonus": 4, "max_dex_bonus": 2, "check_penalty": -10, "spell_failure": 50, "weight": 45}
   }
 }

@@ -1,5 +1,5 @@
 import Tkinter as tk
-from Tkinter import N, S, E, SW, W, NW
+from Tkinter import N, S, E, SW, W, NW, LEFT, RIGHT, Y, BOTH
 
 
 class CharacterSheetView(tk.Toplevel):
@@ -494,17 +494,36 @@ class Skills:
 
         self.skills_list = []
 
-        tk.Label(self.frame, text="SKILL NAME", font=("", 10, "bold"), width=14, anchor=W).grid(row=0, column=0, sticky=SW)
-        tk.Label(self.frame, text="KEY\nABILITY", font=("", 6), width=6).grid(row=0, column=1, sticky=S)
-        tk.Label(self.frame, text="SKILL\nMODIFIER", font=("", 6), width=10).grid(row=0, column=2, sticky=S)
-        tk.Label(self.frame, text="ABILITY\nMODIFIER", font=("", 6), width=8).grid(row=0, column=3, sticky=S)
-        tk.Label(self.frame, text="RANKS", font=("", 6), width=7).grid(row=0, column=4, sticky=S)
+        tk.Label(self.frame, text="SKILL NAME", font=("", 10, "bold"), width=11, anchor=W).grid(row=0, column=0, sticky=SW)
+        tk.Label(self.frame, text="KEY\nABILITY", font=("", 6), width=5).grid(row=0, column=1, sticky=S)
+        tk.Label(self.frame, text="SKILL\nMODIFIER", font=("", 6), width=7).grid(row=0, column=2, sticky=S)
+        tk.Label(self.frame, text="ABILITY\nMODIFIER", font=("", 6), width=6).grid(row=0, column=3, sticky=S)
+        tk.Label(self.frame, text="RANKS", font=("", 6), width=5).grid(row=0, column=4, sticky=S)
+
+        frame = tk.Frame(self.frame)
+        frame.grid(row=1, columnspan=6, sticky=W, pady=(2,0))
+
+        canvas = tk.Canvas(frame)
+        f = tk.Frame(canvas)
+
+        yscrollbar = tk.Scrollbar(frame)
+        yscrollbar.pack(side=RIGHT, fill=Y)
+        yscrollbar.config(command=canvas.yview)
 
         for i, v in enumerate(control.SKILLS_LIST):
-            skill = Skill(self.frame, i+1)
+            skill = Skill(f, i)
             skill.skill_name.set("%s" % v)
             skill.key_ability.set("%s" % control.SKILLS.get(v).get('key_ability'))
             self.skills_list.append(skill)
+
+        canvas.create_window(0, 0, window=f, anchor='nw')
+        canvas.config(yscrollcommand=yscrollbar.set)
+        canvas.config(width=260, height=385)
+        canvas.pack(side=LEFT, expand=True, fill=BOTH)
+
+        self.frame.update()
+        canvas.config(scrollregion=canvas.bbox("all"))
+
 
 
 class Skill:
@@ -516,6 +535,6 @@ class Skill:
         self.ranks_var = tk.StringVar()
 
         tk.Label(parent, textvariable=self.skill_name, font=("", 10), width=14, anchor=W).grid(row=r, column=0)
-        tk.Label(parent, textvariable=self.key_ability, font=("", 8)).grid(row=r, column=1)
-        tk.Label(parent, textvariable=self.skill_mod_var, font=("", 14)).grid(row=r, column=2)
-        tk.Label(parent, textvariable=self.ability_mod_var, font=("", 12)).grid(row=r, column=3)
+        tk.Label(parent, textvariable=self.key_ability, font=("", 8), width=3).grid(row=r, column=1)
+        tk.Label(parent, textvariable=self.skill_mod_var, font=("", 14), width=7).grid(row=r, column=2)
+        tk.Label(parent, textvariable=self.ability_mod_var, font=("", 12), width=2).grid(row=r, column=3)
