@@ -45,6 +45,8 @@ class CharacterSheetController(object):
     SKILLS = data.get("skills")
     
     def __init__(self, root):
+        self.phase = 1
+        self.root = root
         self.character = Character()
         self.ability_rolls = self.character.roll_ability_scores()
         self.view = CharacterSheetView(root, self)
@@ -55,7 +57,7 @@ class CharacterSheetController(object):
                                                   self.update_initiative, self.update_all_weapons, self.update_skills, self.update_all_skills)
         self.class_level_cmd = self.combine_funcs(self.update_class_level, self.update_saving_throws,
                                                   self.update_base_attack_bonus, self.update_grapple,
-                                                  self.update_all_weapons, self.update_skills)
+                                                  self.update_all_weapons, self.update_skills, self.update_all_skills)
 
         #class field
         self.view.race_class_level.class_var.set(self.CLASS_OPTIONS[0])
@@ -66,10 +68,13 @@ class CharacterSheetController(object):
             menu.add_command(label=c, command=lambda c=c: self.view.race_class_level.class_var.set(c))
         # class level field
         self.view.race_class_level.class_level.config(command=self.class_level_cmd, validatecommand=self.validate_lvl_cmd)
+        self.view.race_class_level.class_level.bind("<Return>", self.class_level_cmd)
 
         # race field
         self.view.race_class_level.race_var.set(self.RACE_OPTIONS[0])
-        self.view.race_class_level.race_var.trace("w", self.combine_funcs(self.update_race, self.update_size, self.update_grapple, self.update_speed, self.update_armour_class))
+        self.view.race_class_level.race_var.trace("w", self.combine_funcs(self.update_race, self.update_size,
+                                            self.update_grapple, self.update_speed, self.update_armour_class, self.update_skills,
+                                            self.update_armour, self.update_shield))
         menu = self.view.race_class_level.race_choices['menu']
         menu.delete(0, 'end')
         for race in self.RACE_OPTIONS:
@@ -115,6 +120,7 @@ class CharacterSheetController(object):
         self.update_shield_category()
         self.update_armour_class()
         self.update_initiative()
+
         self.character.weapons_list = [{} for i in self.view.weapons_list]
         for weapon in self.view.weapons_list:
             weapon.weapon_var.set(self.weapon_options[0])
@@ -129,18 +135,34 @@ class CharacterSheetController(object):
             weapon.weapon_proficiency_var.trace("w", lambda a, b, c, w=weapon: self.update_weapon_proficiency(w, [a, b, c]))
             self.update_weapon_proficiency(weapon)
 
-        self.update_skills()
+        self.character.skills = [{} for i in self.view.skills.skills_list]
+        self.validate_skill_ranks_cmd = (root.register(self.validate_skill_ranks), "%P", "%s", "%S", "%W")
         for skill in self.view.skills.skills_list:
-            self.update_skill(skill)
+            skill.spend_ranks.config(command=lambda s=skill: self.combine_funcs(self.update_skill(s), self.update_skills()), validatecommand=self.validate_skill_ranks_cmd)
+            skill_data = self.SKILLS.get(skill.skill_name.get())
+            skill_data['ranks'] = 0
+            self.character.skills[self.view.skills.skills_list.index(skill)] = skill_data
+            #self.update_skill(skill)
+        self.update_skills()
+        self.update_all_skills()
 
 
     def next_phase_button(self):
-        self.view.race_class_level.not_editable()
-        self.view.ability_scores.remove_switches()
-        self.character.hp = self.character.roll_hit_points()
-        self.view.hit_points.render_hitpoints()
-        self.update_hp()
-        self.view.next_phase_btn.button.grid_remove()
+        if self.phase == 1:
+            self.view.race_class_level.not_editable()
+            self.view.ability_scores.remove_switches()
+            self.character.hp = self.character.roll_hit_points()
+            self.view.hit_points.render_hitpoints()
+            self.update_hp()
+            for i, skill in enumerate(self.view.skills.skills_list):
+                skill.editable(i)
+            self.view.skills.update()
+            self.phase = 2
+        elif self.phase == 2:
+            for i, skill in enumerate(self.view.skills.skills_list):
+                skill.not_editable(i)
+            self.view.skills.update()
+            self.view.next_phase_btn.button.grid_remove()
 
 
     def validate_level(self, user_input, current_base, new_base, widget_name):
@@ -306,14 +328,19 @@ class CharacterSheetController(object):
             weapon_options = ["unarmed strike"]
         else:
             weapon_options = [" -none- "]
-        for w in self.WEAPON_LIST:
+        for i, w in enumerate(self.WEAPON_LIST):
             weapon_data = self.WEAPONS.get(w)
             if weapon_data.get('proficiency') == proficiency and weapon_data.get('category') == category: weapon_options.append(w)
+
         weapon.weapon_var.set(weapon_options[0])
         menu = weapon.weapon_choices['menu']
         menu.delete(0, 'end')
-        for weapon_data in weapon_options:
-            menu.add_command(label=weapon_data, command=lambda w=weapon_data: weapon.weapon_var.set(w))
+        for _weapon in weapon_options:
+            weapon_data = self.WEAPONS.get(_weapon)
+            weapon_title = _weapon
+            if not _weapon in ['unarmed strike', ' -none- ']:
+                if self.character.check_weapon_proficiency(weapon_data): weapon_title += u' \u2022'
+            menu.add_command(label=weapon_title, command=lambda w=_weapon: weapon.weapon_var.set(w))
 
 
     def update_weapon_proficiency(self, weapon, *args):
@@ -335,16 +362,58 @@ class CharacterSheetController(object):
     def update_all_weapons(self, *args):
         for weapon in self.view.weapons_list:
             self.update_weapon(weapon)
+            current_weapon = weapon.weapon_var.get()
+            self.update_weapon_choices(weapon)
+            weapon.weapon_var.set(current_weapon)
 
 
     def update_skills(self, *args):
         self.view.skills.max_class_ranks_var.set(self.character.get_max_class_skill_ranks())
+        self.view.skills.spent_ranks_var.set(self.character.get_spent_skill_ranks())
+
+
+    def validate_skill_ranks(self, user_input, current_base, new_base, widget_name):
+        class_data, level = self.character.class_one_level
+        spinbox = self.view.skills.frame.nametowidget(widget_name)
+        spinbox.config(to=level + 3)
+
+        valid = new_base == "" or new_base.isdigit()
+        if valid:
+            minval = int(spinbox.config("from")[4])
+            maxval = int(spinbox.config("to")[4] + 1)
+            if user_input and int(user_input) not in range(minval, maxval):
+                valid = False
+
+        return valid
 
 
     def update_skill(self, skill, *args):
+        max_ranks = self.character.get_max_class_skill_ranks()
+        spent_ranks = self.character.get_spent_skill_ranks()
+
+        if spent_ranks >= max_ranks \
+          and skill.spend_ranks.get() > skill.ranks_var.get():
+            ranks = int(skill.spend_ranks.get())-1
+            skill.spend_ranks.delete(0, "end")
+            skill.spend_ranks.insert(0, ranks)
+
+        ranks = int(skill.spend_ranks.get())
+        self.character.skills[self.view.skills.skills_list.index(skill)]['ranks'] = ranks
+        model_skill = self.character.skills[self.view.skills.skills_list.index(skill)]
+
+        proficient = self.character.check_skill_profiency(model_skill.get('name'))
         ability = self.ABILITIES.get(skill.key_ability.get())
-        skill.skill_mod_var.set(self.character.get_ability_modifier(ability))
+
+        if proficient:
+            skill.skill_name.set(model_skill.get('name') + u' \u2022')
+            total = self.character.get_ability_modifier(ability) + ranks
+        else:
+            skill.skill_name.set(model_skill.get('name'))
+            total = self.character.get_ability_modifier(ability) + (ranks / 2)
+
+        skill.skill_mod_var.set(total)
         skill.ability_mod_var.set(self.character.get_ability_modifier(ability))
+        skill.ranks_var.set(ranks)
 
 
     def update_all_skills(self, *args):

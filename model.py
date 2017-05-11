@@ -12,6 +12,7 @@ class Character(object):
         self.base_saving_throws = {}
         self.misc_saving_throw_modifiers = []
         self.base_attack_bonus = []
+        self.skills = []
         self.special_abilities = []
         self.feats = []
         self.weapons_list = []
@@ -295,11 +296,26 @@ class Character(object):
                 + (-4 if not self.check_weapon_proficiency(weapon) else 0) for i in self.base_attack_bonus]
 
 
+    def check_skill_profiency(self, skill):
+        class_data, level = self.class_one_level
+        if skill in class_data.get('class_skills'):
+            return True
+
+
     def get_max_class_skill_ranks(self):
         class_data, level = self.class_one_level
         int_mod = self.get_ability_modifier("intelligence")
         base_skill_ranks = class_data.get('base_skill_points')
-        class_skill_ranks = (base_skill_ranks + int_mod) * 4
+        class_skill_ranks = (base_skill_ranks + int_mod) * 4 if (base_skill_ranks + int_mod) * 4 > 0 else 4
+        if self.race.get('name') == "human": class_skill_ranks += 4
         for i in range(level - 1):
-            class_skill_ranks += (base_skill_ranks + int_mod)
+            class_skill_ranks += (base_skill_ranks + int_mod) if (base_skill_ranks + int_mod) > 0 else 1
+            if self.race.get('name') == "human": class_skill_ranks += 1
         return class_skill_ranks
+
+
+    def get_spent_skill_ranks(self):
+        spent_ranks = 0
+        for skill in self.skills:
+            spent_ranks += skill.get('ranks')
+        return spent_ranks
